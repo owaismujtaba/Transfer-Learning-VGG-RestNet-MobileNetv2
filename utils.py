@@ -1,8 +1,14 @@
 
 import config
 import pandas as pd
-from tensorflow import convert_to_tensor, expand_dims, 
+import os
+import shutil
+import seaborn as sns
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
+from tensorflow import convert_to_tensor, expand_dims
 from tensorflow.image  import grayscale_to_rgb, resize
+from matplotlib import pyplot as plt
 
 
 def load_AHWD_dataset():
@@ -40,5 +46,63 @@ def load_processed_dataset():
     print(X_train.shape, X_val.shape)
     
     return X_train, y_train, X_val, y_val
+  
+def plot_train_accuracy(history, name):
+    plt.plot(history.history['accuracy'], label='Training Accuracy')
+    plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
+    plt.xlabel('Epoch')
+    plt.ylim([0.2, 1])
+    plt.ylabel('Accuracy')
+    plt.legend(['train', 'val'])
+    name = name + '.png'
+    plt.savefig(name, dpi=600)
     
+def plot_train_loss(history, name):
+    plt.plot(history.history['loss'], label='Training loss')
+    plt.plot(history.history['val_loss'], label='Validation val_loss')
+    plt.ylim([0, 1])
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.legend(['train', 'val'])
+    plt.savefig('ResNet50_loss.png', dpi=600)
+    name = name + '.png'
+    plt.savefig(name, dpi=600)
+ 
+ 
+def plot_train_history(history, name):
+    name1 = name + '_accuracy'
+    name2 = name + '_loss'
+    plot_train_accuracy(history, name1) 
+    plot_train_loss(history, name2)
+
+def performance(model, model_name,  X_val, y_val):
+    pred = model.predict(X_val)
+    pred = np.argmax(pred, axis=1)
+    report = classification_report(y_val, pred, output_dict=True)
+
+    print("Report:\n", report)
+    df_report = pd.DataFrame(report)
+    df_report = df_report.round(4)
+    name =model_name +  '.csv'
+    df_report.to_csv(name, index=False)
+
+    cm = confusion_matrix(y_val, pred)
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(cm, annot=True, fmt="d", cmap='Blues',  xticklabels=[x for x in range(28)], yticklabels=[x for x in range(28)])
+    plt.title('Confusion Matrix')
+    plt.xlabel('Predicted')
+    plt.ylabel('True')
+    plt.tight_layout()
     
+    name = model_name + ',ong'
+    plt.savefig(name, dpi=600)
+    
+    print(cm)
+    
+
+def save_trained_model(model, name):
+    model.save(name, save_format='tf')
+    folder_path = config.trained_models_path
+    os.makedirs(folder_path, exist_ok=True)
+    folder_path =  folder_path + '/' + name
+    shutil.make_archive(folder_path, 'zip', folder_path)
