@@ -4,6 +4,7 @@ import pandas as pd
 import os
 import shutil
 import seaborn as sns
+from tensorflow import float32
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from tensorflow import convert_to_tensor, expand_dims
@@ -25,6 +26,7 @@ def load_AHWD_dataset():
     y_test = pd.read_csv(y_test_path)
     y_train = y_train-1
     y_test = y_test - 1
+    print('loading ahwd dataset done')
     return X_train.values, y_train.values,  X_test.values, y_test.values
 
 
@@ -33,16 +35,16 @@ def load_processed_dataset():
     X_train, y_train, X_val, y_val = load_AHWD_dataset()
     
     X_train = X_train.reshape(-1, 32, 32)
-    X_train = convert_to_tensor(X_train, dtype=tf.float32)
+    X_train = convert_to_tensor(X_train, dtype=float32)
     X_train = expand_dims(X_train, axis=-1)
     X_train = grayscale_to_rgb(X_train)
-    X_train = resize(X_train, size=(128, 128))
+    X_train = resize(X_train, size=config.image_shape)
 
     X_val = X_val.reshape(-1, 32, 32)
-    X_val = convert_to_tensor(X_val, dtype=tf.float32)
+    X_val = convert_to_tensor(X_val, dtype=float32)
     X_val = expand_dims(X_val, axis=-1)
     X_val = grayscale_to_rgb(X_val)
-    X_val = resize(X_val, size=(128, 128))
+    X_val = resize(X_val, size=config.image_shape)
     print(X_train.shape, X_val.shape)
     
     return X_train, y_train, X_val, y_val
