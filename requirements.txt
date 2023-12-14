@@ -1,0 +1,4 @@
+tensorflow
+panadas
+scikit-learn
+matplotlib
