@@ -5,12 +5,14 @@ import config
 
 def train_model(model, train_laoder, validation_loader):
     print('Training the model')
+    import pdb
+    pdb.set_trace()
     model.compile(
         optimizer=Adam(),
         loss=SparseCategoricalCrossentropy(),
         metrics=['accuracy']
     )
-    
+   
     early_stopping = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
 
     history = model.fit(
@@ -19,4 +21,4 @@ def train_model(model, train_laoder, validation_loader):
         callbacks=[early_stopping],
         validation_data=validation_loader
     )
-    return history
+    return history, model
